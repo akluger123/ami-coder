@@ -6,9 +6,10 @@ import { KeyRound, Github, ExternalLink } from "lucide-react";
 interface TokenInputProps {
   onConnect: (token: string) => void;
   loading: boolean;
+  onSignOut?: () => void;
 }
 
-export function TokenInput({ onConnect, loading }: TokenInputProps) {
+export function TokenInput({ onConnect, loading, onSignOut }: TokenInputProps) {
   const [token, setToken] = useState("");
 
   return (
@@ -49,7 +50,7 @@ export function TokenInput({ onConnect, loading }: TokenInputProps) {
           </Button>
         </div>
 
-        <div className="text-center">
+        <div className="text-center space-y-2">
           <a
             href="https://github.com/settings/tokens/new?scopes=repo&description=AI+Code+Editor"
             target="_blank"
@@ -59,6 +60,13 @@ export function TokenInput({ onConnect, loading }: TokenInputProps) {
             Generate a token with repo scope
             <ExternalLink className="h-3 w-3" />
           </a>
+          {onSignOut && (
+            <div>
+              <button onClick={onSignOut} className="text-xs text-muted-foreground hover:text-destructive transition-colors">
+                Sign out
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

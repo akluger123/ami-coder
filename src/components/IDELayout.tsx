@@ -17,9 +17,10 @@ interface IDELayoutProps {
   repo: Repo;
   tree: TreeItem[];
   onDisconnect: () => void;
+  onSignOut?: () => void;
 }
 
-export function IDELayout({ token, repo, tree, onDisconnect }: IDELayoutProps) {
+export function IDELayout({ token, repo, tree, onDisconnect, onSignOut }: IDELayoutProps) {
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState("");
   const [originalContent, setOriginalContent] = useState("");
@@ -103,9 +104,14 @@ export function IDELayout({ token, repo, tree, onDisconnect }: IDELayoutProps) {
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setChatOpen(!chatOpen)}>
             {chatOpen ? <PanelRightClose className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
           </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onDisconnect}>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onDisconnect} title="Disconnect repo">
             <LogOut className="h-4 w-4" />
           </Button>
+          {onSignOut && (
+            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={onSignOut}>
+              Sign Out
+            </Button>
+          )}
         </div>
       </div>
 
