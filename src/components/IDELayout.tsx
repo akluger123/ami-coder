@@ -104,9 +104,14 @@ export function IDELayout({ token, repo, tree, onDisconnect, onSignOut }: IDELay
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setChatOpen(!chatOpen)}>
             {chatOpen ? <PanelRightClose className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
           </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onDisconnect}>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onDisconnect} title="Disconnect repo">
             <LogOut className="h-4 w-4" />
           </Button>
+          {onSignOut && (
+            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={onSignOut}>
+              Sign Out
+            </Button>
+          )}
         </div>
       </div>
 

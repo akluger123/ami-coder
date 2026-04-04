@@ -50,7 +50,7 @@ export function TokenInput({ onConnect, loading, onSignOut }: TokenInputProps) {
           </Button>
         </div>
 
-        <div className="text-center">
+        <div className="text-center space-y-2">
           <a
             href="https://github.com/settings/tokens/new?scopes=repo&description=AI+Code+Editor"
             target="_blank"
@@ -60,6 +60,13 @@ export function TokenInput({ onConnect, loading, onSignOut }: TokenInputProps) {
             Generate a token with repo scope
             <ExternalLink className="h-3 w-3" />
           </a>
+          {onSignOut && (
+            <div>
+              <button onClick={onSignOut} className="text-xs text-muted-foreground hover:text-destructive transition-colors">
+                Sign out
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
