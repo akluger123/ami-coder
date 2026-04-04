@@ -20,7 +20,7 @@ interface IDELayoutProps {
   onSignOut?: () => void;
 }
 
-export function IDELayout({ token, repo, tree, onDisconnect }: IDELayoutProps) {
+export function IDELayout({ token, repo, tree, onDisconnect, onSignOut }: IDELayoutProps) {
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState("");
   const [originalContent, setOriginalContent] = useState("");
