@@ -17,6 +17,7 @@ interface IDELayoutProps {
   repo: Repo;
   tree: TreeItem[];
   onDisconnect: () => void;
+  onSignOut?: () => void;
 }
 
 export function IDELayout({ token, repo, tree, onDisconnect }: IDELayoutProps) {
