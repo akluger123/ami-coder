@@ -8,6 +8,7 @@ import {
   GitBranch, Save, LogOut, PanelLeftClose, PanelLeft,
   MessageSquare, PanelRightClose, X, Loader2, CheckSquare
 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { fetchFileContent, updateFile } from "@/lib/github";
 import type { TreeItem, Repo } from "@/lib/github";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +19,7 @@ interface IDELayoutProps {
   tree: TreeItem[];
   onDisconnect: () => void;
   onSignOut?: () => void;
+  onBack?: () => void;
 }
 
 export interface FileEntry {
@@ -26,7 +28,7 @@ export interface FileEntry {
   original: string;
 }
 
-export function IDELayout({ token, repo, tree, onDisconnect, onSignOut }: IDELayoutProps) {
+export function IDELayout({ token, repo, tree, onDisconnect, onSignOut, onBack }: IDELayoutProps) {
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [fileCache, setFileCache] = useState<Record<string, FileEntry>>({});
   const [loadingFile, setLoadingFile] = useState(false);
@@ -145,6 +147,11 @@ export function IDELayout({ token, repo, tree, onDisconnect, onSignOut }: IDELay
       {/* Top bar */}
       <div className="flex h-10 items-center justify-between border-b border-border bg-card px-3">
         <div className="flex items-center gap-2">
+          {onBack && (
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onBack} title="Back to menu">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
           </Button>
