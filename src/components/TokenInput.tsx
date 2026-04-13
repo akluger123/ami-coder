@@ -7,9 +7,10 @@ interface TokenInputProps {
   onConnect: (token: string) => void;
   loading: boolean;
   onSignOut?: () => void;
+  onSkipToChat?: () => void;
 }
 
-export function TokenInput({ onConnect, loading, onSignOut }: TokenInputProps) {
+export function TokenInput({ onConnect, loading, onSignOut, onSkipToChat }: TokenInputProps) {
   const [token, setToken] = useState("");
 
   return (
@@ -64,6 +65,13 @@ export function TokenInput({ onConnect, loading, onSignOut }: TokenInputProps) {
             <div>
               <button onClick={onSignOut} className="text-xs text-muted-foreground hover:text-destructive transition-colors">
                 Sign out
+              </button>
+            </div>
+          )}
+          {onSkipToChat && (
+            <div>
+              <button onClick={onSkipToChat} className="text-xs text-primary hover:text-primary/80 transition-colors font-medium">
+                Skip — use AI without a repo →
               </button>
             </div>
           )}
