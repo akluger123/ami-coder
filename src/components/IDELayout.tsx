@@ -38,6 +38,7 @@ export function IDELayout({ token, repo, tree, onDisconnect, onSignOut, onBack }
   const [chatOpen, setChatOpen] = useState(true);
   const [openTabs, setOpenTabs] = useState<string[]>([]);
   const [aiSelectedFiles, setAiSelectedFiles] = useState<Set<string>>(new Set());
+  const [previewOpen, setPreviewOpen] = useState(false);
   const { toast } = useToast();
 
   const [owner, repoName] = repo.full_name.split("/");
