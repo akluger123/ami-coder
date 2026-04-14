@@ -2,11 +2,12 @@ import { useState, useCallback } from "react";
 import { FileTree } from "@/components/FileTree";
 import { CodeEditor } from "@/components/CodeEditor";
 import { ChatPanel } from "@/components/ChatPanel";
+import { PreviewPanel } from "@/components/PreviewPanel";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   GitBranch, Save, LogOut, PanelLeftClose, PanelLeft,
-  MessageSquare, PanelRightClose, X, Loader2, CheckSquare
+  MessageSquare, PanelRightClose, X, Loader2, CheckSquare, Eye, EyeOff
 } from "lucide-react";
 import { ArrowLeft } from "lucide-react";
 import { fetchFileContent, updateFile } from "@/lib/github";
@@ -37,6 +38,7 @@ export function IDELayout({ token, repo, tree, onDisconnect, onSignOut, onBack }
   const [chatOpen, setChatOpen] = useState(true);
   const [openTabs, setOpenTabs] = useState<string[]>([]);
   const [aiSelectedFiles, setAiSelectedFiles] = useState<Set<string>>(new Set());
+  const [previewOpen, setPreviewOpen] = useState(false);
   const { toast } = useToast();
 
   const [owner, repoName] = repo.full_name.split("/");
@@ -168,6 +170,9 @@ export function IDELayout({ token, repo, tree, onDisconnect, onSignOut, onBack }
               Commit
             </Button>
           )}
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setPreviewOpen(!previewOpen)} title="Toggle preview">
+            {previewOpen ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </Button>
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setChatOpen(!chatOpen)}>
             {chatOpen ? <PanelRightClose className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
           </Button>
@@ -245,21 +250,27 @@ export function IDELayout({ token, repo, tree, onDisconnect, onSignOut, onBack }
             </div>
           )}
 
-          {/* Editor */}
-          <div className="flex-1 overflow-hidden">
-            {loadingFile ? (
-              <div className="flex h-full items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : selectedPath ? (
-              <CodeEditor
-                filename={selectedPath}
-                content={fileContent}
-                onChange={(c) => setFileContent(selectedPath, c)}
-              />
-            ) : (
-              <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
-                <p className="text-sm">Select a file to start editing</p>
+          <div className={`flex-1 overflow-hidden ${previewOpen ? "flex" : ""}`}>
+            <div className={previewOpen ? "flex-1 overflow-hidden" : "h-full"}>
+              {loadingFile ? (
+                <div className="flex h-full items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : selectedPath ? (
+                <CodeEditor
+                  filename={selectedPath}
+                  content={fileContent}
+                  onChange={(c) => setFileContent(selectedPath, c)}
+                />
+              ) : (
+                <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
+                  <p className="text-sm">Select a file to start editing</p>
+                </div>
+              )}
+            </div>
+            {previewOpen && selectedPath && (
+              <div className="w-1/2 border-l border-border overflow-hidden">
+                <PreviewPanel filename={selectedPath} content={fileContent} />
               </div>
             )}
           </div>
