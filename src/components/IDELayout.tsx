@@ -3,6 +3,7 @@ import { FileTree } from "@/components/FileTree";
 import { CodeEditor } from "@/components/CodeEditor";
 import { ChatPanel } from "@/components/ChatPanel";
 import { PreviewPanel } from "@/components/PreviewPanel";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -124,12 +125,10 @@ export function IDELayout({ token, repo, tree, onDisconnect, onSignOut, onBack }
     }
   };
 
-  // Build files array for AI
   const aiFiles = Array.from(aiSelectedFiles)
     .filter((p) => fileCache[p])
     .map((p) => ({ path: p, content: fileCache[p].content }));
 
-  // If no files explicitly selected, use current file
   const effectiveAiFiles = aiFiles.length > 0 ? aiFiles : (selectedPath && fileCache[selectedPath] ? [{ path: selectedPath, content: fileCache[selectedPath].content }] : []);
 
   const handleApplyEdits = (edits: Record<string, string>) => {
@@ -187,105 +186,123 @@ export function IDELayout({ token, repo, tree, onDisconnect, onSignOut, onBack }
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* Main content - resizable panels */}
+      <ResizablePanelGroup direction="horizontal" className="flex-1">
         {/* Sidebar */}
         {sidebarOpen && (
-          <div className="flex w-60 flex-col border-r border-border bg-card shrink-0">
-            <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Explorer
-            </div>
-            <FileTree items={tree} selectedPath={selectedPath} onSelect={selectFile} />
-          </div>
+          <>
+            <ResizablePanel defaultSize={15} minSize={10} maxSize={30}>
+              <div className="flex h-full flex-col bg-card">
+                <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Explorer
+                </div>
+                <FileTree items={tree} selectedPath={selectedPath} onSelect={selectFile} />
+              </div>
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+          </>
         )}
 
-        {/* Editor area */}
-        <div className="flex flex-1 flex-col overflow-hidden">
-          {/* Tabs with AI selection */}
-          {openTabs.length > 0 && (
-            <div className="flex items-center border-b border-border bg-card overflow-x-auto">
-              {openTabs.length > 1 && (
-                <button
-                  onClick={selectAllForAi}
-                  className="flex items-center gap-1 px-2 py-1.5 text-[10px] text-muted-foreground hover:text-primary border-r border-border shrink-0 transition-colors"
-                  title={aiSelectedFiles.size === openTabs.length ? "Deselect all for AI" : "Select all for AI"}
-                >
-                  <CheckSquare className="h-3.5 w-3.5" />
-                  <span>{aiSelectedFiles.size === openTabs.length ? "None" : "All"}</span>
-                </button>
-              )}
-              {openTabs.map((tab) => {
-                const name = tab.split("/").pop() || tab;
-                const isActive = tab === selectedPath;
-                const isAiSelected = aiSelectedFiles.has(tab);
-                const tabModified = fileCache[tab] && fileCache[tab].content !== fileCache[tab].original;
-                return (
-                  <div
-                    key={tab}
-                    className={`group flex items-center gap-1 border-r border-border px-2 py-1.5 text-xs cursor-pointer shrink-0 ${
-                      isActive ? "bg-background text-foreground" : "text-muted-foreground hover:text-foreground"
-                    }`}
+        {/* Editor + Preview area */}
+        <ResizablePanel defaultSize={chatOpen ? 55 : 85} minSize={30}>
+          <div className="flex h-full flex-col overflow-hidden">
+            {/* Tabs */}
+            {openTabs.length > 0 && (
+              <div className="flex items-center border-b border-border bg-card overflow-x-auto">
+                {openTabs.length > 1 && (
+                  <button
+                    onClick={selectAllForAi}
+                    className="flex items-center gap-1 px-2 py-1.5 text-[10px] text-muted-foreground hover:text-primary border-r border-border shrink-0 transition-colors"
+                    title={aiSelectedFiles.size === openTabs.length ? "Deselect all for AI" : "Select all for AI"}
                   >
-                    <Checkbox
-                      checked={isAiSelected}
-                      onCheckedChange={() => toggleAiFile(tab)}
-                      className="h-3.5 w-3.5 rounded-sm border-muted-foreground/40"
-                    />
-                    <span className="font-mono" onClick={() => selectFile(tab)}>{name}</span>
-                    {tabModified && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
-                    <button
-                      className="ml-0.5 opacity-0 group-hover:opacity-100 hover:text-foreground transition-opacity"
-                      onClick={(e) => { e.stopPropagation(); closeTab(tab); }}
+                    <CheckSquare className="h-3.5 w-3.5" />
+                    <span>{aiSelectedFiles.size === openTabs.length ? "None" : "All"}</span>
+                  </button>
+                )}
+                {openTabs.map((tab) => {
+                  const name = tab.split("/").pop() || tab;
+                  const isActive = tab === selectedPath;
+                  const isAiSelected = aiSelectedFiles.has(tab);
+                  const tabModified = fileCache[tab] && fileCache[tab].content !== fileCache[tab].original;
+                  return (
+                    <div
+                      key={tab}
+                      className={`group flex items-center gap-1 border-r border-border px-2 py-1.5 text-xs cursor-pointer shrink-0 ${
+                        isActive ? "bg-background text-foreground" : "text-muted-foreground hover:text-foreground"
+                      }`}
                     >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                );
-              })}
-              {aiSelectedFiles.size > 0 && (
-                <span className="px-2 text-[10px] text-primary shrink-0">
-                  {aiSelectedFiles.size} file{aiSelectedFiles.size > 1 ? "s" : ""} for AI
-                </span>
-              )}
-            </div>
-          )}
+                      <Checkbox
+                        checked={isAiSelected}
+                        onCheckedChange={() => toggleAiFile(tab)}
+                        className="h-3.5 w-3.5 rounded-sm border-muted-foreground/40"
+                      />
+                      <span className="font-mono" onClick={() => selectFile(tab)}>{name}</span>
+                      {tabModified && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                      <button
+                        className="ml-0.5 opacity-0 group-hover:opacity-100 hover:text-foreground transition-opacity"
+                        onClick={(e) => { e.stopPropagation(); closeTab(tab); }}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  );
+                })}
+                {aiSelectedFiles.size > 0 && (
+                  <span className="px-2 text-[10px] text-primary shrink-0">
+                    {aiSelectedFiles.size} file{aiSelectedFiles.size > 1 ? "s" : ""} for AI
+                  </span>
+                )}
+              </div>
+            )}
 
-          <div className={`flex-1 overflow-hidden ${previewOpen ? "flex" : ""}`}>
-            <div className={previewOpen ? "flex-1 overflow-hidden" : "h-full"}>
-              {loadingFile ? (
-                <div className="flex h-full items-center justify-center">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : selectedPath ? (
-                <CodeEditor
-                  filename={selectedPath}
-                  content={fileContent}
-                  onChange={(c) => setFileContent(selectedPath, c)}
-                />
-              ) : (
-                <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
-                  <p className="text-sm">Select a file to start editing</p>
-                </div>
-              )}
-            </div>
-            {previewOpen && selectedPath && (
-              <div className="w-1/2 border-l border-border overflow-hidden">
-                <PreviewPanel filename={selectedPath} content={fileContent} />
+            {previewOpen ? (
+              <ResizablePanelGroup direction="horizontal" className="flex-1">
+                <ResizablePanel defaultSize={50} minSize={20}>
+                  {loadingFile ? (
+                    <div className="flex h-full items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : selectedPath ? (
+                    <CodeEditor filename={selectedPath} content={fileContent} onChange={(c) => setFileContent(selectedPath, c)} />
+                  ) : (
+                    <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
+                      <p className="text-sm">Select a file to start editing</p>
+                    </div>
+                  )}
+                </ResizablePanel>
+                <ResizableHandle withHandle />
+                <ResizablePanel defaultSize={50} minSize={20}>
+                  {selectedPath && <PreviewPanel filename={selectedPath} content={fileContent} />}
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            ) : (
+              <div className="flex-1 overflow-hidden">
+                {loadingFile ? (
+                  <div className="flex h-full items-center justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : selectedPath ? (
+                  <CodeEditor filename={selectedPath} content={fileContent} onChange={(c) => setFileContent(selectedPath, c)} />
+                ) : (
+                  <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
+                    <p className="text-sm">Select a file to start editing</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
-        </div>
+        </ResizablePanel>
 
         {/* Chat panel */}
         {chatOpen && (
-          <div className="w-80 border-l border-border shrink-0">
-            <ChatPanel
-              files={effectiveAiFiles}
-              onApplyEdits={handleApplyEdits}
-            />
-          </div>
+          <>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={30} minSize={15} maxSize={50}>
+              <ChatPanel files={effectiveAiFiles} onApplyEdits={handleApplyEdits} />
+            </ResizablePanel>
+          </>
         )}
-      </div>
+      </ResizablePanelGroup>
 
       {/* Status bar */}
       <div className="flex h-6 items-center justify-between border-t border-border bg-card px-3 text-[11px] text-muted-foreground">
